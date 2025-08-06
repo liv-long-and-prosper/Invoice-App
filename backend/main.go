@@ -3,6 +3,8 @@ package main
 import (
 	// Go imports
 	"context"
+	"invoice-app-backend/internal/handlers"
+	"invoice-app-backend/internal/services"
 	"log"
 	"net/http"
 	"os"
@@ -45,6 +47,17 @@ func main() {
 		log.Fatal("Migration failed:", err)
 	}
 
+	// Create service instances
+	clientService := &services.ClientService{DB: conn}
+
+	// Create handler instances with services injected
+	clientHandler := &handlers.ClientHandler{
+		DB:      conn,
+		Service: clientService,
+	}
+
+	invoiceItemHandler := &handlers.InvoiceItemHandler{DB: conn}
+
 	// Set up routes
 	r := mux.NewRouter()
 	r.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
@@ -52,7 +65,15 @@ func main() {
 		w.Write([]byte("Server is running!"))
 	}).Methods("GET")
 
+	r.HandleFunc("/invoices/{id}/items", invoiceItemHandler.CreateInvoiceItem).Methods("POST")
+	r.HandleFunc("/invoices/{id}/items/{itemId}", invoiceItemHandler.UpdateInvoiceItem).Methods("PUT")
+	r.HandleFunc("/invoices/{id}/items/{itemId}", invoiceItemHandler.DeleteInvoiceItem).Methods("DELETE")
+
+	r.HandleFunc("/clients", clientHandler.GetClients).Methods("GET")
+	r.HandleFunc("/clients", clientHandler.CreateClient).Methods("POST")
+
 	// Start server
 	log.Println("Server starting on :8080")
 	log.Fatal(http.ListenAndServe(":8080", r))
+
 }
