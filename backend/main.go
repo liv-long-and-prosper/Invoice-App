@@ -56,6 +56,7 @@ func main() {
 		Service: clientService,
 	}
 
+	invoiceHandler := &handlers.InvoiceHandler{DB: conn}
 	invoiceItemHandler := &handlers.InvoiceItemHandler{DB: conn}
 
 	// Set up routes
@@ -65,12 +66,24 @@ func main() {
 		w.Write([]byte("Server is running!"))
 	}).Methods("GET")
 
+	r.HandleFunc("/invoices", invoiceHandler.GetInvoices).Methods("GET")
+	r.HandleFunc("/invoices/{id}/mark-paid", invoiceHandler.MarkInvoiceAsPaid).Methods("PUT") // Add this
+
 	r.HandleFunc("/invoices/{id}/items", invoiceItemHandler.CreateInvoiceItem).Methods("POST")
 	r.HandleFunc("/invoices/{id}/items/{itemId}", invoiceItemHandler.UpdateInvoiceItem).Methods("PUT")
 	r.HandleFunc("/invoices/{id}/items/{itemId}", invoiceItemHandler.DeleteInvoiceItem).Methods("DELETE")
 
 	r.HandleFunc("/clients", clientHandler.GetClients).Methods("GET")
 	r.HandleFunc("/clients", clientHandler.CreateClient).Methods("POST")
+	r.HandleFunc("/clients/{id}", clientHandler.DeleteClient).Methods("DELETE")
+
+	log.Println("Registered routes:")
+	r.Walk(func(route *mux.Route, router *mux.Router, ancestors []*mux.Route) error {
+		template, _ := route.GetPathTemplate()
+		methods, _ := route.GetMethods()
+		log.Printf("Route: %s Methods: %v", template, methods)
+		return nil
+	})
 
 	// Start server
 	log.Println("Server starting on :8080")

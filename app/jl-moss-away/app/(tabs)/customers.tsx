@@ -1,7 +1,11 @@
 import React, {useEffect, useState} from 'react';
-import {View, Text, StyleSheet, FlatList, TouchableOpacity} from 'react-native';
+import {View, Text, StyleSheet, TouchableOpacity, Alert} from 'react-native';
+import { SwipeListView } from 'react-native-swipe-list-view';
 import { Stack, router } from 'expo-router';
 import Button from '../components/Button';
+import { useFocusEffect } from '@react-navigation/native';
+import { useCallback } from 'react';
+
 
 type Customer = {
     id: number;
@@ -17,6 +21,40 @@ export default function CustomersPage() {
 
     const handleAddCustomer = () => {
         router.push('/add-customer'); // Fixed path
+    };
+
+    const handleDeleteCustomer = (customerId: number, customerName: string) => {
+        Alert.alert(
+            'Delete Customer',
+            `Are you sure you want to delete ${customerName}?`,
+            [
+                { text: 'Cancel', style: 'cancel' },
+                {
+                    text: 'Delete',
+                    style: 'destructive',
+                    onPress: () => deleteCustomer(customerId)
+                }
+            ]
+        );
+    };
+
+    const deleteCustomer = async (customerId: number) => {
+        try {
+            const response = await fetch(`http://localhost:8080/clients/${customerId}`, {
+                method: 'DELETE',
+            });
+
+            if (!response.ok) {
+                throw new Error(`Failed to delete customer`);
+            }
+
+            // Remove from local state
+            setCustomerList(prev => prev.filter(customer => customer.id !== customerId));
+
+        } catch (error) {
+            console.error('Error deleting customer:', error);
+            Alert.alert('Error', 'Failed to delete customer. Please try again.');
+        }
     };
 
     // Function for when someone clicks on the customer name/row
@@ -42,36 +80,49 @@ export default function CustomersPage() {
         </TouchableOpacity>
     );
 
+    const renderHiddenDelete = ({ item }: { item: Customer }) => (
+        <View style={styles.hiddenItemContainer}>
+            <TouchableOpacity
+                style={styles.deleteButton}
+                onPress={() => handleDeleteCustomer(item.id, item.name)}
+            >
+                <Text style={styles.deleteButtonText}>Delete</Text>
+            </TouchableOpacity>
+        </View>
+    );
+
+    const fetchCustomers = useCallback(async () => {
+        setLoading(true);
+        try {
+            const response = await fetch('http://localhost:8080/clients');
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+            const jsonData = await response.json();
+            const customers: Customer[] = jsonData.map((item: any) => ({
+                id: item.id,
+                name: item.name,
+                email: item.email,
+                phone: item.phone,
+                address: item.address
+            }));
+            setCustomerList(customers);
+        } catch (error: unknown) {
+            console.error('Fetch error:', error);
+        } finally {
+            setLoading(false);
+        }
+    }, []);
 
     useEffect(() => {
-        setLoading(true);
+        fetchCustomers();
+    }, [fetchCustomers]);
 
-        const fetchCustomers = async () => {
-            try {
-                const response = await fetch('http://localhost:8080/clients');
-                if (!response.ok) {
-                    throw new Error(`HTTP error! Status: ${response.status}`);
-                }
-                const jsonData = await response.json();
-
-                const customers: Customer[] = jsonData.map((item: any) => ({
-                    id: item.id,
-                    name: item.name,
-                    email: item.email,
-                    phone: item.phone,
-                    address: item.address
-                }));
-                setCustomerList(customers);
-
-            } catch (error) {
-                console.error('Fetch error:', error);
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        fetchCustomers(); // Call the async function
-    }, []);
+    useFocusEffect(
+        useCallback(() => {
+            fetchCustomers();
+        }, [fetchCustomers])
+    );
 
     if (loading) {
         return (
@@ -106,11 +157,15 @@ export default function CustomersPage() {
                 <Text style={styles.subtitle}>Add, search, and manage your customers</Text>
 
                 <View style={styles.listContainer}>
-                <FlatList
-                    data={customerList}
-                    renderItem={renderCustomerItem}
-                    keyExtractor={(item) => item.id.toString()}
-                />
+                    <SwipeListView
+                        data={customerList}
+                        renderItem={renderCustomerItem}
+                        renderHiddenItem={renderHiddenDelete}
+                        keyExtractor={(item) => item.id.toString()}
+                        rightOpenValue={-80} // How far to swipe
+                        disableRightSwipe={true} // Only allow left swipe
+                        closeOnRowPress={true}
+                    />
                 </View>
                 <View style={styles.placeholder}>
                     <Text style={styles.placeholderText}>🏠 Customer features coming soon!:</Text>
@@ -187,7 +242,7 @@ const styles = StyleSheet.create({
     customerRow: {
         backgroundColor: '#fff',
         padding: 15,
-        marginVertical: 5,
+        marginVertical: .25,
         borderRadius: 10,
         borderWidth: 1,
         borderColor: '#e0e0e0',
@@ -211,7 +266,6 @@ const styles = StyleSheet.create({
     listContainer: {
         flex: 1,
         width: '100%',
-        marginBottom: 20,
     },
     emptyContainer: {
         flex: 1,
@@ -224,5 +278,27 @@ const styles = StyleSheet.create({
         color: '#666',
         textAlign: 'center',
         marginBottom: 20,
+    },
+    hiddenItemContainer: {
+        flex: 1,
+        flexDirection: 'row',
+        justifyContent: 'flex-end',
+        alignItems: 'center',
+        backgroundColor: '#f7eee0',
+        paddingRight: 10,
+    },
+    deleteButton: {
+        backgroundColor: '#ff3b30',
+        justifyContent: 'center',
+        alignItems: 'center',
+        width: 80,
+        height: '90%',
+        borderTopRightRadius: 10,
+        borderBottomRightRadius: 10,
+    },
+    deleteButtonText: {
+        color: '#fff',
+        fontWeight: 'bold',
+        fontSize: 16,
     },
 });

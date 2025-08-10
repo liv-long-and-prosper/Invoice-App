@@ -14,20 +14,46 @@ export default function AddCustomer() {
     const [state, setState] = useState('');
     const [zipCode, setZipCode] = useState('');
 
-    const handleSaveCustomer = () => {
+    const handleSaveCustomer = async () => {
 
+       // Validate req'd fields
+        if(!firstName || !lastName){
+            alert("Please fill in first and last name")
+            return
+        }
 
-        // TODO: Save customer to database
-        console.log('Saving customer:', {
-            firstName,
-            lastName,
-            phone,
-            email,
-            streetAddress,
-            city,
-            state,
-            zipCode
-        });
+        // Combine first and last for backend purposes
+        const customerData = {
+            name: `${firstName} ${lastName}`,
+            email: email,
+            phone: phone,
+            address: `${streetAddress}, ${city}, ${state} ${zipCode}` // Combine address fields
+        };
+
+        try{
+            const response = await fetch('http://localhost:8080/clients', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(customerData)
+            });
+
+            if (!response.ok) {
+                console.error(`HTTP error! Status: ${response.status}`);
+                alert(`Failed to save customer. Server returned status: ${response.status}`);
+                return;
+            }
+
+            const newCustomer = await response.json();
+            console.log('Customer saved:', newCustomer);
+            alert('Customer saved successfully!');
+
+            router.back();
+        } catch (error){
+            console.error('Error saving customer:', error);
+            alert('Failed to save customer. Please try again.');
+        }
     };
 
     return (
