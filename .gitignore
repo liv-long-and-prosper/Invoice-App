@@ -2,3 +2,7 @@ node_modules/
 *.log
 backend/.env
 backend/internal/
+
+.idea/
+.vscode/
+
