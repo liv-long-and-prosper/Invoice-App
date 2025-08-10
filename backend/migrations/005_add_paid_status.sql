@@ -1,0 +1,3 @@
+ALTER TABLE invoices ADD COLUMN is_paid BOOLEAN DEFAULT FALSE;
+ALTER TABLE invoices ADD COLUMN paid_date DATE NULL;
+UPDATE invoices SET is_paid = FALSE WHERE is_paid IS NULL;
