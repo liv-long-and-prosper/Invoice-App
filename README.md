@@ -50,8 +50,8 @@ A mobile customer and invoice management app built for local roof cleaning busin
 4. Scan QR code with Expo Go app or run in simulator
 
 ## Screenshots
-<img width="386" height="797" alt="Screenshot 2025-08-09 at 10 26 00 PM" src="https://github.com/user-attachments/assets/ec7b858d-597a-4f0a-b645-e39fedc858f0" />
-<img width="386" height="797" alt="Screenshot 2025-08-09 at 10 26 04 PM" src="https://github.com/user-attachments/assets/3d546c7b-e96a-453a-a9b0-92eb17d7792e" />
-<img width="386" height="797" alt="Screenshot 2025-08-09 at 10 26 09 PM" src="https://github.com/user-attachments/assets/3f5c2b3c-4bb8-4a80-88cd-0187f54b85f5" />
-<img width="386" height="797" alt="Screenshot 2025-08-09 at 10 25 53 PM" src="https://github.com/user-attachments/assets/28eb0e9f-5cad-479c-903a-ab6cc1ac066d" />
+<img width="386" height="797" alt="Screenshot 2025-08-09 at 10 25 53 PM" src="https://github.com/user-attachments/assets/b1276f7c-a5e7-45b9-a529-45718883c325" />
+<img width="386" height="797" alt="Screenshot 2025-08-09 at 10 26 00 PM" src="https://github.com/user-attachments/assets/bf5ae96d-98c3-46af-8639-573769aba694" />
+<img width="386" height="797" alt="Screenshot 2025-08-09 at 10 26 04 PM" src="https://github.com/user-attachments/assets/fe0f479f-0d58-4d64-bced-a06c53fb711f" />
+<img width="386" height="797" alt="Screenshot 2025-08-09 at 10 26 09 PM" src="https://github.com/user-attachments/assets/a19af7a0-aa2e-44bf-9f0c-ff53abd99681" />
 
